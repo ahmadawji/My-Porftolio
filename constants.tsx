@@ -122,10 +122,6 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
     skills: ["React.js (v18)", "Next.js", "TanStack Query", "Zustand", "Jest", "Vitest"]
   },
   {
-    title: "Domain Expertise",
-    skills: ["Veeva Vault RIM", "Document Lifecycles", "Pharma Compliance"]
-  },
-  {
     title: "UI/UX",
     skills: ["Ant Design", "Material UI", "Styled Components", "Tailwind CSS", "Responsive Design"]
   }
