@@ -41,7 +41,8 @@ const ActivityBoard: React.FC = () => {
           header: true,
           skipEmptyLines: true,
           complete: (results) => {
-            const validLogs = results.data.filter(log => log.Date && log.Status === 'Published');
+            console.log("Parsed CSV data:", results.data);
+            const validLogs = results.data.filter(log => log.Date && log.Status === 'Published').sort((a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime());
             setLogs(validLogs);
             
             // Generate calendar data
