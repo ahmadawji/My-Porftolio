@@ -91,7 +91,7 @@ const Experience: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.5 }}
-              className={`flex flex-col md:flex-row gap-8 md:flex-row-reverse`}
+              className={`flex flex-col md:flex-row gap-8`}
             >
               <div className="flex-1"></div>
                <div className="hidden md:flex items-center justify-center w-12 h-12 rounded-full bg-white dark:bg-slate-800 border-4 border-transparent shadow-lg z-10 shrink-0">

@@ -101,21 +101,155 @@ const PixelBackground: React.FC = () => {
     spawn('goose', 3);
     spawn('chicken', 3);
 
-    const drawPixelRect = (x: number, y: number, w: number, h: number, color: string) => {
+    const drawPixelRect = (x: number, y: number, w: number, h: number, color: string, isVoxel: boolean = true) => {
       ctx.fillStyle = color;
       ctx.fillRect(Math.floor(x) * pixelScale, Math.floor(y) * pixelScale, w * pixelScale, h * pixelScale);
+      
+      // Add voxel shading
+      if (isVoxel && w >= 1 && h >= 1) {
+        // Top highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.fillRect(Math.floor(x) * pixelScale, Math.floor(y) * pixelScale, w * pixelScale, pixelScale);
+        
+        // Left highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+        ctx.fillRect(Math.floor(x) * pixelScale, Math.floor(y) * pixelScale, pixelScale, h * pixelScale);
+        
+        // Right shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.fillRect(Math.floor(x + w - 1) * pixelScale, Math.floor(y) * pixelScale, pixelScale, h * pixelScale);
+        
+        // Bottom shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(Math.floor(x) * pixelScale, Math.floor(y + h - 1) * pixelScale, w * pixelScale, pixelScale);
+      }
     };
 
-    const drawTree = (x: number, y: number) => {
+    const drawTree = (x: number, y: number, t: number, isMagical: boolean = false) => {
       const trunkColor = theme === 'dark' ? '#3f2e26' : '#8B4513';
-      const leafColor = theme === 'dark' ? '#0f392b' : '#228B22'; 
+      
+      let leafColor = theme === 'dark' ? '#0f392b' : '#228B22'; 
+      if (isMagical) {
+        leafColor = theme === 'dark' ? '#4c1d95' : '#8b5cf6'; // Purple magical leaves
+      }
+      
+      const appleColor = theme === 'dark' ? '#7f1d1d' : '#dc2626';
+      
+      // Wind effect
+      const wind = Math.sin(t * 0.02 + x) * 0.5;
       
       // Trunk
-      drawPixelRect(x + 3, y - 10, 2, 10, trunkColor);
-      // Leaves
-      drawPixelRect(x, y - 20, 8, 10, leafColor);
-      drawPixelRect(x + 1, y - 24, 6, 4, leafColor);
-      drawPixelRect(x + 2, y - 26, 4, 2, leafColor);
+      drawPixelRect(x + 4, y - 12, 2, 12, trunkColor);
+      drawPixelRect(x + 3, y - 2, 4, 2, trunkColor); // Roots
+      
+      // Leaves (Blocky Minecraft style)
+      const lx = x + wind;
+      drawPixelRect(lx, y - 22, 10, 10, leafColor); // Main block
+      drawPixelRect(lx + 1, y - 26, 8, 4, leafColor); // Top block
+      drawPixelRect(lx - 2, y - 18, 14, 4, leafColor); // Wide middle block
+      
+      // Apples or glowing fruit
+      if (!isMagical && Math.floor(x) % 3 === 0) {
+        drawPixelRect(lx + 2, y - 16, 1, 1, appleColor);
+        drawPixelRect(lx + 8, y - 14, 1, 1, appleColor);
+        drawPixelRect(lx + 5, y - 20, 1, 1, appleColor);
+      } else if (isMagical) {
+        // Glowing bits
+        const glow = Math.sin(t * 0.05 + x) > 0 ? '#c4b5fd' : '#a78bfa';
+        drawPixelRect(lx + 2, y - 16, 1, 1, glow);
+        drawPixelRect(lx + 8, y - 14, 1, 1, glow);
+        drawPixelRect(lx + 5, y - 20, 1, 1, glow);
+      }
+    };
+
+    const drawFloatingIsland = (x: number, y: number, t: number) => {
+      const floatY = y + Math.sin(t * 0.02 + x) * 4;
+      const dirt = theme === 'dark' ? '#3f2e26' : '#8B4513';
+      const grass = theme === 'dark' ? '#14532d' : '#4ade80';
+      const stone = theme === 'dark' ? '#4a4a4a' : '#9ca3af';
+      
+      // Top grass layer
+      drawPixelRect(x, floatY, 20, 2, grass);
+      drawPixelRect(x - 2, floatY + 1, 24, 2, grass);
+      
+      // Dirt layer
+      drawPixelRect(x - 1, floatY + 3, 22, 3, dirt);
+      drawPixelRect(x + 2, floatY + 6, 16, 2, dirt);
+      drawPixelRect(x + 5, floatY + 8, 10, 3, dirt);
+      drawPixelRect(x + 8, floatY + 11, 4, 2, dirt);
+      
+      // Stone bits
+      drawPixelRect(x + 3, floatY + 4, 2, 2, stone);
+      drawPixelRect(x + 14, floatY + 7, 3, 2, stone);
+      drawPixelRect(x + 7, floatY + 9, 2, 2, stone);
+      
+      // Vines
+      drawPixelRect(x, floatY + 3, 1, 4, grass);
+      drawPixelRect(x + 18, floatY + 3, 1, 6, grass);
+      
+      // Small tree on island
+      drawTree(x + 12, floatY, t, true); // Magical tree
+    };
+
+    const drawPortal = (x: number, y: number, t: number) => {
+      const obsidian = '#1e1b4b'; // Very dark purple/black
+      const portalColor = theme === 'dark' ? '#a855f7' : '#d8b4fe'; // Purple glow
+      
+      // Frame (4x5 blocks, each block is 4x4 pixels)
+      // Left pillar
+      drawPixelRect(x, y - 20, 4, 20, obsidian);
+      // Right pillar
+      drawPixelRect(x + 16, y - 20, 4, 20, obsidian);
+      // Top
+      drawPixelRect(x + 4, y - 20, 12, 4, obsidian);
+      // Bottom
+      drawPixelRect(x + 4, y - 4, 12, 4, obsidian);
+      
+      // Portal inside
+      const innerY = y - 16;
+      drawPixelRect(x + 4, innerY, 12, 12, portalColor);
+      
+      // Swirl animation
+      const swirl = Math.floor(t * 0.1) % 4;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      if (swirl === 0) {
+        ctx.fillRect((x + 6) * pixelScale, (innerY + 2) * pixelScale, 4 * pixelScale, 4 * pixelScale);
+        ctx.fillRect((x + 10) * pixelScale, (innerY + 6) * pixelScale, 4 * pixelScale, 4 * pixelScale);
+      } else if (swirl === 1) {
+        ctx.fillRect((x + 10) * pixelScale, (innerY + 2) * pixelScale, 4 * pixelScale, 4 * pixelScale);
+        ctx.fillRect((x + 10) * pixelScale, (innerY + 6) * pixelScale, 4 * pixelScale, 4 * pixelScale);
+      } else if (swirl === 2) {
+        ctx.fillRect((x + 10) * pixelScale, (innerY + 6) * pixelScale, 4 * pixelScale, 4 * pixelScale);
+        ctx.fillRect((x + 6) * pixelScale, (innerY + 6) * pixelScale, 4 * pixelScale, 4 * pixelScale);
+      } else {
+        ctx.fillRect((x + 6) * pixelScale, (innerY + 6) * pixelScale, 4 * pixelScale, 4 * pixelScale);
+        ctx.fillRect((x + 6) * pixelScale, (innerY + 2) * pixelScale, 4 * pixelScale, 4 * pixelScale);
+      }
+      
+      // Portal particles
+      for (let i = 0; i < 3; i++) {
+        const px = x + 2 + (Math.sin(t * 0.05 + i) * 10 + 10) % 16;
+        const py = y - 2 - (t * 0.1 + i * 5) % 20;
+        drawPixelRect(px, py, 1, 1, '#e9d5ff', false);
+      }
+    };
+
+    const drawSwordInStone = (x: number, y: number) => {
+      const stoneColor = theme === 'dark' ? '#4b5563' : '#9ca3af';
+      const bladeColor = '#e2e8f0';
+      const hiltColor = '#f59e0b';
+      const handleColor = '#78350f';
+      
+      // Stone
+      drawPixelRect(x - 4, y - 4, 8, 4, stoneColor);
+      drawPixelRect(x - 3, y - 6, 6, 2, stoneColor);
+      drawPixelRect(x - 1, y - 7, 3, 1, stoneColor);
+      
+      // Sword
+      drawPixelRect(x, y - 12, 1, 6, bladeColor); // Blade
+      drawPixelRect(x - 2, y - 13, 5, 1, hiltColor); // Crossguard
+      drawPixelRect(x, y - 16, 1, 3, handleColor); // Handle
+      drawPixelRect(x, y - 17, 1, 1, hiltColor); // Pommel
     };
 
     const drawPizzaOven = (x: number, y: number, t: number) => {
@@ -124,29 +258,45 @@ const PixelBackground: React.FC = () => {
 
       // Base
       drawPixelRect(x, y - 12, 14, 12, stoneDark);
+      // Brick details on base
+      drawPixelRect(x + 2, y - 10, 3, 2, stoneDarker);
+      drawPixelRect(x + 8, y - 8, 4, 2, stoneDarker);
+      drawPixelRect(x + 4, y - 4, 3, 2, stoneDarker);
+      
       // Dome
       drawPixelRect(x + 1, y - 14, 12, 2, stoneDark);
       drawPixelRect(x + 3, y - 15, 8, 1, stoneDark);
+      
       // Opening
       drawPixelRect(x + 4, y - 8, 6, 6, '#1a1a1a');
+      
       // Chimney
       drawPixelRect(x + 8, y - 18, 3, 4, stoneDarker);
       drawPixelRect(x + 7, y - 20, 5, 2, stoneDark);
       
       // Fire Animation
-      if (Math.floor(t / 20) % 2 === 0) {
+      if (Math.floor(t / 10) % 2 === 0) {
         drawPixelRect(x + 5, y - 6, 4, 4, '#FF4500'); 
         drawPixelRect(x + 6, y - 5, 2, 2, '#FFD700'); 
       } else {
         drawPixelRect(x + 5, y - 5, 4, 3, '#FF8C00'); 
         drawPixelRect(x + 6, y - 6, 2, 2, '#FFFF00'); 
       }
+      
+      // Pizza
+      drawPixelRect(x + 5, y - 3, 4, 1, '#fef08a'); // Crust/Cheese
+      drawPixelRect(x + 6, y - 3, 1, 1, '#dc2626'); // Pepperoni
 
       // Smoke
       const smokeY = (t * 0.05) % 30; 
       if (smokeY < 20) {
           drawPixelRect(x + 9 + Math.sin(t * 0.02) * 2, y - 22 - smokeY, 2, 2, theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.4)');
+          drawPixelRect(x + 8 + Math.sin(t * 0.02 + 1) * 3, y - 26 - smokeY * 1.2, 3, 3, theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.2)');
       }
+      
+      // Wood logs next to oven
+      drawPixelRect(x - 4, y - 3, 3, 3, '#78350f');
+      drawPixelRect(x - 3, y - 4, 3, 2, '#451a03');
     };
 
     const drawChair = (x: number, y: number) => {
@@ -190,42 +340,64 @@ const PixelBackground: React.FC = () => {
       drawTable(tableX, y);
 
       const shirt = theme === 'dark' ? '#1e40af' : '#3b82f6';
+      const skin = '#ffccaa';
+      const hair = '#451a03';
       
       // Guy sitting position needs to match the new chair height (seat at y-8)
       const seatY = y - 8;
 
       // Body (Sitting on chair)
       // Legs (dangling/sitting)
-      drawPixelRect(guyX + 4, seatY + 2, 1, 4, '#1e293b'); // Shin dangling down
+      const legSwing = Math.sin(t * 0.05) * 0.5;
+      drawPixelRect(guyX + 4 + legSwing, seatY + 2, 1, 4, '#1e293b'); // Shin dangling down
       drawPixelRect(guyX, seatY, 5, 2, '#1e293b'); // Thigh on seat
 
       // Torso (From seat up)
       drawPixelRect(guyX, seatY - 6, 4, 6, shirt); 
+      // Shirt detail (collar/tie)
+      drawPixelRect(guyX + 2, seatY - 6, 1, 2, '#ffffff');
       
-      // Head
-      drawPixelRect(guyX, seatY - 11, 4, 5, '#ffccaa'); // Skin
-      drawPixelRect(guyX, seatY - 12, 4, 2, '#451a03'); // Hair
+      // Head (bobbing slightly)
+      const headBob = Math.sin(t * 0.1) > 0 ? 0 : 1;
+      drawPixelRect(guyX, seatY - 11 + headBob, 4, 5, skin); // Skin
+      drawPixelRect(guyX, seatY - 12 + headBob, 4, 2, hair); // Hair
+      drawPixelRect(guyX - 1, seatY - 11 + headBob, 2, 2, hair); // Back hair
+      drawPixelRect(guyX + 2, seatY - 10 + headBob, 1, 1, '#000000', false); // Eye
 
       // Laptop (On table top at y-12)
-      const laptopX = tableX + 3;
+      const laptopX = tableX + 2;
       const laptopY = y - 13; // On top of table
       drawPixelRect(laptopX, laptopY, 6, 1, '#94a3b8'); // Base
       drawPixelRect(laptopX, laptopY - 5, 1, 5, '#94a3b8'); // Screen Back
       drawPixelRect(laptopX + 0.5, laptopY - 4.5, 0.5, 4, '#e0f2fe'); // Screen Glow
+      
+      // Coffee Mug
+      drawPixelRect(tableX + 9, y - 14, 2, 2, '#ef4444');
+      // Steam
+      if (Math.floor(t / 15) % 2 === 0) {
+        drawPixelRect(tableX + 9, y - 16, 1, 1, 'rgba(255,255,255,0.5)', false);
+      } else {
+        drawPixelRect(tableX + 10, y - 17, 1, 1, 'rgba(255,255,255,0.5)', false);
+      }
 
       // Arms/Typing
-      const handY = Math.floor(t / 20) % 2 === 0 ? seatY - 3 : seatY - 4; 
-      drawPixelRect(guyX + 2, handY, 4, 1, '#ffccaa');
+      const handY = Math.floor(t / 10) % 2 === 0 ? seatY - 3 : seatY - 4; 
+      drawPixelRect(guyX + 2, handY, 4, 1, skin);
     };
 
-    const drawTent = (x: number, y: number, w: number, h: number) => {
+    const drawTent = (x: number, y: number, w: number, h: number, t: number) => {
         const poleColor = theme === 'dark' ? '#3f2e26' : '#8B4513';
         const canvasColor = theme === 'dark' ? '#312e81' : '#6366f1'; // Indigo/Purple
         const canvasDark = theme === 'dark' ? '#1e1b4b' : '#4338ca';
+        const ropeColor = theme === 'dark' ? '#9ca3af' : '#d1d5db';
 
         // Poles
         drawPixelRect(x + 2, y - h, 2, h, poleColor);
         drawPixelRect(x + w - 4, y - h, 2, h, poleColor);
+        
+        // Ropes
+        drawPixelRect(x - 4, y, 6, 1, ropeColor, false); // Left rope
+        drawPixelRect(x + w - 2, y, 6, 1, ropeColor, false); // Right rope
 
         // Canopy Roof
         // Triangular/Trapezoid shape
@@ -239,51 +411,86 @@ const PixelBackground: React.FC = () => {
             drawPixelRect(x + xOffset, roofY - roofHeight + i, widthAtHeight, 1, canvasColor);
         }
         
-        // Scalloped edge
+        // Scalloped edge with wind
+        const wind = Math.sin(t * 0.05) * 0.5;
         for(let i = -2; i < w + 2; i += 5) {
-             drawPixelRect(x + i, roofY, 3, 2, canvasDark);
+             drawPixelRect(x + i + wind, roofY, 3, 2, canvasDark);
         }
         
         // Top flag
         drawPixelRect(x + w/2 - 1, roofY - roofHeight - 4, 1, 4, poleColor);
-        drawPixelRect(x + w/2, roofY - roofHeight - 4, 4, 3, '#ef4444');
+        const flagWave = Math.sin(t * 0.1) > 0 ? 1 : 0;
+        drawPixelRect(x + w/2, roofY - roofHeight - 4 + flagWave, 5, 3, '#ef4444');
+        
+        // Lantern hanging from tent
+        drawPixelRect(x + w/2 - 1, roofY, 1, 2, '#4b5563'); // Chain
+        drawPixelRect(x + w/2 - 2, roofY + 2, 3, 4, '#f59e0b'); // Lantern body
+        drawPixelRect(x + w/2 - 1, roofY + 3, 1, 2, '#fef08a', false); // Glow
     };
 
     const drawAnimal = (entity: Entity, x: number, y: number, t: number) => {
       // Slower bounce
-      const bounce = Math.sin((t + entity.frameOffset) * 0.05) > 0 ? 1 : 0;
-      const ay = y - bounce; 
+      const bounce = Math.sin((t + entity.frameOffset) * 0.1) > 0 ? 1 : 0;
+      const ay = y - (entity.speed > 0 ? bounce : 0); // Only bounce if moving
       
       if (entity.type === 'sheep') {
         const fleece = theme === 'dark' ? '#cbd5e1' : '#f1f5f9';
         const darkPart = '#0f172a';
         // Body
         drawPixelRect(x, ay - 6, 8, 5, fleece);
+        // Fluff details
+        drawPixelRect(x - 1, ay - 5, 2, 3, fleece);
+        drawPixelRect(x + 7, ay - 5, 2, 3, fleece);
+        drawPixelRect(x + 2, ay - 7, 4, 2, fleece);
+        
         // Legs
         if (bounce === 0) {
             drawPixelRect(x + 1, ay - 1, 1, 2, darkPart);
             drawPixelRect(x + 6, ay - 1, 1, 2, darkPart);
+        } else {
+            drawPixelRect(x + 2, ay - 1, 1, 2, darkPart);
+            drawPixelRect(x + 5, ay - 1, 1, 2, darkPart);
         }
         // Head
-        drawPixelRect(entity.dir === 1 ? x + 6 : x - 2, ay - 7, 3, 3, darkPart);
+        drawPixelRect(entity.dir === 1 ? x + 7 : x - 3, ay - 7, 3, 3, darkPart);
+        // Eye
+        drawPixelRect(entity.dir === 1 ? x + 8 : x - 2, ay - 6, 1, 1, '#ffffff', false);
       } 
       else if (entity.type === 'goose') {
         const feathers = theme === 'dark' ? '#e2e8f0' : '#ffffff';
         // Body
-        drawPixelRect(x, ay - 4, 5, 3, feathers);
+        drawPixelRect(x, ay - 4, 6, 4, feathers);
+        // Tail
+        drawPixelRect(entity.dir === 1 ? x - 2 : x + 6, ay - 5, 2, 2, feathers);
         // Neck
-        drawPixelRect(entity.dir === 1 ? x + 4 : x, ay - 8, 1, 4, feathers);
+        drawPixelRect(entity.dir === 1 ? x + 5 : x, ay - 9, 2, 5, feathers);
+        // Head
+        drawPixelRect(entity.dir === 1 ? x + 5 : x - 1, ay - 10, 3, 2, feathers);
         // Beak
-        drawPixelRect(entity.dir === 1 ? x + 5 : x - 1, ay - 7, 1, 1, '#f97316');
+        drawPixelRect(entity.dir === 1 ? x + 8 : x - 3, ay - 9, 2, 1, '#f97316');
+        // Eye
+        drawPixelRect(entity.dir === 1 ? x + 6 : x, ay - 10, 1, 1, '#000000', false);
+        // Legs
+        drawPixelRect(x + 2, ay, 1, 1, '#f97316');
+        drawPixelRect(x + 4, ay, 1, 1, '#f97316');
       }
       else if (entity.type === 'chicken') {
         const feathers = theme === 'dark' ? '#7c2d12' : '#9a3412';
         // Body
-        drawPixelRect(x, ay - 3, 3, 2, feathers);
+        drawPixelRect(x, ay - 4, 4, 3, feathers);
+        // Tail
+        drawPixelRect(entity.dir === 1 ? x - 1 : x + 4, ay - 5, 1, 2, '#ea580c');
         // Head
-        drawPixelRect(entity.dir === 1 ? x + 2 : x - 1, ay - 5, 2, 2, feathers);
+        drawPixelRect(entity.dir === 1 ? x + 3 : x - 2, ay - 6, 3, 3, feathers);
         // Comb
-        drawPixelRect(entity.dir === 1 ? x + 2 : x, ay - 6, 1, 1, '#dc2626');
+        drawPixelRect(entity.dir === 1 ? x + 3 : x - 1, ay - 8, 2, 2, '#dc2626');
+        // Beak
+        drawPixelRect(entity.dir === 1 ? x + 6 : x - 3, ay - 5, 1, 1, '#facc15');
+        // Eye
+        drawPixelRect(entity.dir === 1 ? x + 4 : x - 1, ay - 6, 1, 1, '#000000', false);
+        // Legs
+        drawPixelRect(x + 1, ay - 1, 1, 2, '#facc15');
+        drawPixelRect(x + 3, ay - 1, 1, 2, '#facc15');
       }
     };
 
@@ -357,6 +564,30 @@ const PixelBackground: React.FC = () => {
       ctx.fillStyle = grassColor;
       ctx.fillRect(0, groundY * pixelScale, canvas.width, (h - groundY) * pixelScale);
       
+      const campCenterX = Math.floor(w * 0.65);
+
+      // Path leading to camp
+      const pathColor = theme === 'dark' ? '#3f2e26' : '#d97706';
+      for (let py = groundY; py < h; py++) {
+        const pathWidth = 10 + (py - groundY) * 0.5; // Path gets wider closer to bottom
+        const pathX = campCenterX - pathWidth / 2 + Math.sin(py * 0.1) * 2;
+        drawPixelRect(pathX, py, pathWidth, 1, pathColor, false);
+      }
+
+      // Birds in the sky
+      const birdColor = theme === 'dark' ? '#1e293b' : '#64748b';
+      const b1x = (time * 0.05) % (w + 100) - 50;
+      const b1y = 40 + Math.sin(time * 0.02) * 5;
+      drawPixelRect(b1x, b1y, 1, 1, birdColor, false);
+      drawPixelRect(b1x - 1, b1y - 1, 1, 1, birdColor, false);
+      drawPixelRect(b1x + 1, b1y - 1, 1, 1, birdColor, false);
+      
+      const b2x = ((time * 0.06) + 40) % (w + 100) - 50;
+      const b2y = 35 + Math.sin(time * 0.03) * 4;
+      drawPixelRect(b2x, b2y, 1, 1, birdColor, false);
+      drawPixelRect(b2x - 1, b2y - 1, 1, 1, birdColor, false);
+      drawPixelRect(b2x + 1, b2y - 1, 1, 1, birdColor, false);
+      
       // Ground Decorations: Grass Tufts, Pebbles, Flowers
       for (let i = 0; i < w; i++) {
         // Deterministic random generators based on X position to ensure stability
@@ -405,11 +636,18 @@ const PixelBackground: React.FC = () => {
         }
       }
 
-      // Trees - Lowered and placed on the ground
-      drawTree(20, groundY + 5);
-      drawTree(w - 30, groundY + 8);
-      drawTree(w * 0.15, groundY + 2);
-      drawTree(w * 0.85, groundY + 6);
+      // Trees - Blocky Minecraft style
+      drawTree(20, groundY + 5, time);
+      drawTree(w - 30, groundY + 8, time);
+      drawTree(w * 0.15, groundY + 2, time);
+      drawTree(w * 0.85, groundY + 6, time);
+
+      // Fantasy Elements
+      drawFloatingIsland(w * 0.2, groundY - 60, time);
+      drawFloatingIsland(w * 0.8, groundY - 80, time + 100);
+      
+      drawPortal(w * 0.1, groundY + 5, time);
+      drawSwordInStone(w * 0.9, groundY + 10);
 
       // --- Interactive Camp Scene ---
       // Ordering for depth: Animals behind -> Camp -> Tent
@@ -433,7 +671,6 @@ const PixelBackground: React.FC = () => {
       });
 
       // 2. Camp Scene (Mid/Fore Layer)
-      const campCenterX = Math.floor(w * 0.65);
       const campY = groundY + 20; // Position slightly lower than horizon for depth
 
       // Oven
@@ -444,7 +681,7 @@ const PixelBackground: React.FC = () => {
       
       // Tent (Draws "over" or "around" them)
       // Tent covers from campCenterX - 10 to campCenterX + 50
-      drawTent(campCenterX - 10, campY, 65, 35);
+      drawTent(campCenterX - 10, campY, 65, 35, time);
 
       animationFrameId = requestAnimationFrame(render);
     };
