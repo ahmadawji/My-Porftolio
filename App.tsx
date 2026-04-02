@@ -47,7 +47,7 @@ const App: React.FC = () => {
           // Since we used HashRouter, 'window.location.hash' will be '#/' or '#/blog/id'.
           // The href attribute from a link <a href="#about"> is just '#about'.
           
-          // Logic: If we are viewing the home component, try to scroll.
+          // Logic: If we are viewing the home component,  try to scroll.
           // In HashRouter, root is '#/'
           if (window.location.hash === '#/' || window.location.hash === '') {
              e.preventDefault();
