@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { PERSONAL_INFO } from '../constants';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { AsciiEffect } from './ui/ascii-effect.tsx';
+import profileImage from '../assets/images/Profile_Transparent.png';
 
 // --- Terminal Boot Sequence ---
 const bootLines = [
@@ -241,7 +242,7 @@ const Hero: React.FC = () => {
           <div className="w-full max-w-[320px] sm:max-w-[400px] lg:max-w-[480px] aspect-square overflow-hidden rounded-2xl shrink-0">
             <AsciiEffect
               variant="glitch"
-              imageSrc="./assets/images/Profile_Transparent.png"
+              imageSrc={profileImage}
               fontSize={9}
               scale={1.15}
               colors={['#050505', '#e2e4cf']}
