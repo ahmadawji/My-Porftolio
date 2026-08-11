@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { PERSONAL_INFO } from '../constants';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { AsciiEffect } from './ui/ascii-effect.tsx';
 
 // --- Terminal Boot Sequence ---
 const bootLines = [
@@ -52,8 +53,8 @@ const TerminalBoot: React.FC = () => {
         <div key={i} style={{ marginBottom: '2px' }}>
           {line.text}
           {i === visibleLines - 1 && !done && (
-            <span style={{ 
-              color: 'var(--color-accent)', 
+            <span style={{
+              color: 'var(--color-accent)',
               animation: 'blink-cursor 1s step-end infinite',
               marginLeft: '2px',
             }}>█</span>
@@ -153,7 +154,7 @@ const Hero: React.FC = () => {
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
 
   return (
-    <section 
+    <section
       className="scanlines"
       style={{
         position: 'relative',
@@ -170,87 +171,88 @@ const Hero: React.FC = () => {
       <TerminalBoot />
       <FloatingCoords />
 
-      <div className="container" style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '120px 16px 80px' }}>
+      <div className="container" style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '120px 16px 80px' }} id="#">
         <motion.div
           style={{ y: y1, opacity }}
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut', delay: 1.4 }}
+          className="flex flex-col-reverse lg:flex-row items-center justify-center gap-8 text-center lg:text-left"
         >
-          {/* Marquee pill */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1.6, duration: 0.4 }}
-            style={{ marginBottom: '32px', display: 'flex', justifyContent: 'center' }}
-          >
-            <div className="marquee-pill">
-              <span style={{ marginRight: '8px' }}>■</span>
-              AVAILABLE FOR HIRE
-            </div>
-          </motion.div>
+          <div className="flex-2 max-w-4xl">
 
-          {/* Name */}
-          <h1 className="display-lg" style={{ 
-            color: 'var(--color-text)',
-            marginBottom: '16px',
-          }}>
-            {PERSONAL_INFO.name}
-          </h1>
+            {/* Name */}
+            <h1 className="display-lg" style={{
+              color: 'var(--color-text)',
+              marginBottom: '16px',
+            }}>
+              {PERSONAL_INFO.name}
+            </h1>
+            {/* Role - terminal style */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.8, duration: 0.5 }}
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '16px',
+                fontWeight: 400,
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                color: 'var(--color-accent)',
+                marginBottom: '32px',
+              }}
+            >
+              <span style={{ color: 'var(--color-text-muted)', marginRight: '8px' }}>&gt;</span>
+              ROLE: {PERSONAL_INFO.title.toUpperCase().replace(' ', '_')}
+            </motion.div>
 
-          {/* Role - terminal style */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.8, duration: 0.5 }}
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '16px',
-              fontWeight: 400,
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-              color: 'var(--color-accent)',
-              marginBottom: '32px',
-            }}
-          >
-            <span style={{ color: 'var(--color-text-muted)', marginRight: '8px' }}>&gt;</span>
-            ROLE: {PERSONAL_INFO.title.toUpperCase().replace(' ', '_')}
-          </motion.div>
+            {/* Tagline */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2.0, duration: 0.5 }}
+              className="body-lg"
+              style={{
+                color: 'var(--color-text-variant)',
+                maxWidth: '600px',
+                marginBottom: '48px',
+              }}
+            >
+              {PERSONAL_INFO.tagline}
+            </motion.p>
 
-          {/* Tagline */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2.0, duration: 0.5 }}
-            className="body-lg"
-            style={{
-              color: 'var(--color-text-variant)',
-              maxWidth: '600px',
-              margin: '0 auto 48px',
-            }}
-          >
-            {PERSONAL_INFO.tagline}
-          </motion.p>
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 2.2, duration: 0.5 }}
+              className="flex flex-wrap gap-4 justify-center lg:justify-start"
+            >
+              <a href="#about" className="btn btn-primary">
+                EXPLORE <ArrowRight size={16} />
+              </a>
+              <a href="#contact" className="btn">
+                GET IN TOUCH
+              </a>
+            </motion.div>
 
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 2.2, duration: 0.5 }}
-            style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}
-          >
-            <a href="#about" className="btn btn-primary">
-              EXPLORE <ArrowRight size={16} />
-            </a>
-            <a href="#contact" className="btn">
-              GET IN TOUCH
-            </a>
-          </motion.div>
+          </div>
+          <div className="w-full max-w-[320px] sm:max-w-[400px] lg:max-w-[480px] aspect-square overflow-hidden rounded-2xl shrink-0">
+            <AsciiEffect
+              variant="glitch"
+              imageSrc="./assets/images/Profile_Transparent.png"
+              fontSize={9}
+              scale={1.15}
+              colors={['#050505', '#e2e4cf']}
+              backgroundColor='#050505'
+            />
+          </div>
         </motion.div>
       </div>
 
       {/* Scroll indicator */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2.5, duration: 1 }}

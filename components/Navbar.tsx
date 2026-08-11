@@ -34,7 +34,7 @@ const Navbar: React.FC = () => {
     { name: 'About', href: getHref('#about') },
     { name: 'Experience', href: getHref('#experience') },
     { name: 'Skills', href: getHref('#skills') },
-    { name: 'Activity', href: getHref('#activity') },
+    /* { name: 'Activity', href: getHref('#activity') }, */
     { name: 'Contact', href: getHref('#contact') },
   ];
 
@@ -66,9 +66,19 @@ const Navbar: React.FC = () => {
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '20px',
+              fontWeight: 800,
+              letterSpacing: '-0.02em',
+              textTransform: 'uppercase',
+              color: 'var(--color-accent)',
+              textDecoration: 'none',
+            }}
           >
-            <Link 
-              to="/" 
+            <a
+              href='#'
               style={{
                 fontFamily: 'var(--font-display)',
                 fontSize: '20px',
@@ -80,7 +90,7 @@ const Navbar: React.FC = () => {
               }}
             >
               AWJI<span style={{ color: 'var(--color-text)' }}>.DEV</span>
-            </Link>
+            </a>
           </motion.div>
           
           {/* Desktop Nav */}
