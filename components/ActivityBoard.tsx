@@ -41,18 +41,15 @@ const ActivityBoard: React.FC = () => {
           header: true,
           skipEmptyLines: true,
           complete: (results) => {
-            console.log("Parsed CSV data:", results.data);
             const validLogs = results.data.filter(log => log.Date && log.Status === 'Published').sort((a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime());
             setLogs(validLogs);
             
-            // Generate calendar data
             const countsByDate: Record<string, number> = {};
             validLogs.forEach(log => {
               const dateStr = log.Date;
               countsByDate[dateStr] = (countsByDate[dateStr] || 0) + 1;
             });
 
-            // We need to provide a full year of data for the calendar to look good
             const today = new Date();
             const oneYearAgo = subYears(today, 1);
             
@@ -68,12 +65,7 @@ const ActivityBoard: React.FC = () => {
               if (count === 3) level = 3;
               if (count >= 4) level = 4;
               
-              data.push({
-                date: dateStr,
-                count,
-                level
-              });
-              
+              data.push({ date: dateStr, count, level });
               currentDate.setDate(currentDate.getDate() + 1);
             }
             
@@ -81,13 +73,11 @@ const ActivityBoard: React.FC = () => {
             setLoading(false);
           },
           error: (error: any) => {
-            console.error("Papa parse error:", error);
             setError("Failed to parse activity data.");
             setLoading(false);
           }
         });
       } catch (error) {
-        console.error("Error fetching sheet data:", error);
         setError("Failed to load activity data. Please check your connection or if the Google Sheet is accessible.");
         setLoading(false);
       }
@@ -98,123 +88,143 @@ const ActivityBoard: React.FC = () => {
 
   const getCategoryIcon = (category: string) => {
     switch (category.toLowerCase()) {
-      case 'work': return <Briefcase size={16} />;
-      case 'learning': return <BookOpen size={16} />;
-      case 'personal': return <Code size={16} />;
-      default: return <FileText size={16} />;
+      case 'work': return <Briefcase size={14} />;
+      case 'learning': return <BookOpen size={14} />;
+      case 'personal': return <Code size={14} />;
+      default: return <FileText size={14} />;
     }
   };
 
   return (
-    <section id="activity" className="py-24 relative overflow-hidden">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+    <section id="activity" className="section">
+      <div className="container" style={{ maxWidth: '960px' }}>
+        <div className="section-header">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-bold text-text-primary mb-4"
+            className="section-title"
           >
             Activity Board
           </motion.h2>
           <motion.div 
             initial={{ width: 0 }}
-            whileInView={{ width: 80 }}
+            whileInView={{ width: 48 }}
             viewport={{ once: true }}
-            className="h-1 bg-accent mx-auto rounded-full mb-6"
+            className="section-bar"
           />
           <motion.p 
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-text-secondary max-w-2xl mx-auto"
+            className="section-subtitle"
           >
             Tracking my continuous learning, side projects, and professional contributions.
           </motion.p>
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '256px' }}>
+            <div style={{
+              width: '24px',
+              height: '24px',
+              border: '2px solid var(--color-outline-variant)',
+              borderTopColor: 'var(--color-accent)',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+            }} />
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         ) : error ? (
-          <div className="flex justify-center items-center h-64 bg-[#0d1117] border border-[#30363d] rounded-xl p-6">
-            <div className="text-center">
-              <p className="text-xl font-bold text-red-400 mb-2">Oops!</p>
-              <p className="text-gray-400">{error}</p>
-            </div>
+          <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
+            <p className="headline-sm" style={{ color: 'var(--color-error)', marginBottom: '8px' }}>ERROR</p>
+            <p className="body-sm" style={{ color: 'var(--color-text-variant)' }}>{error}</p>
           </div>
         ) : (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-[#0d1117] border border-[#30363d] rounded-xl p-6 md:p-8 shadow-2xl"
+            className="card"
+            style={{ padding: '32px' }}
           >
-            <div className="mb-8 overflow-x-auto pb-4">
+            {/* Calendar */}
+            <div style={{ marginBottom: '32px', overflowX: 'auto', paddingBottom: '16px' }}>
               {calendarData.length > 0 ? (
                 <ActivityCalendar 
                   data={calendarData} 
                   theme={{
-                    light: ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'],
-                    dark: ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'],
+                    light: ['var(--color-surface-low)', '#2a3a00', '#3c4d00', '#6b8a00', '#ccff00'],
+                    dark: ['var(--color-surface-low)', '#2a3a00', '#3c4d00', '#6b8a00', '#ccff00'],
                   }}
                   colorScheme="dark"
                   labels={{
-                    legend: {
-                      less: 'Less',
-                      more: 'More'
-                    },
-                    months: [
-                      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-                    ],
+                    legend: { less: 'Less', more: 'More' },
+                    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                     totalCount: '{{count}} contributions in the last year',
                   }}
                 />
               ) : (
-                <div className="h-32 flex items-center justify-center text-[#8b949e]">
+                <div style={{ height: '128px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)' }}>
                   No activity data available
                 </div>
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-[#30363d] pt-8">
+            <div className="grid-2" style={{ borderTop: '1px solid var(--color-outline-variant)', paddingTop: '32px' }}>
+              {/* Recent Activity */}
               <div>
-                <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                  <GitCommit className="text-[#8b949e]" size={18} />
+                <h3 className="headline-sm" style={{ fontSize: '14px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <GitCommit size={16} style={{ color: 'var(--color-text-muted)' }} />
                   Recent Activity
                 </h3>
-                <div className="space-y-4 max-h-[400px] overflow-y-auto overflow-x-hidden custom-scrollbar pr-2">
+                <div className="custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '2px', maxHeight: '400px', overflowY: 'auto', paddingRight: '8px' }}>
                   {logs.slice(0, visibleCount).map((log, idx) => (
                     <div 
                       key={idx} 
-                      className="flex gap-4 items-start p-3 -mx-3 rounded-lg hover:bg-[#161b22] cursor-pointer transition-colors border border-transparent hover:border-[#30363d] group"
+                      style={{
+                        display: 'flex',
+                        gap: '12px',
+                        alignItems: 'flex-start',
+                        padding: '12px',
+                        border: '1px solid transparent',
+                        cursor: 'pointer',
+                        transition: 'border-color 100ms ease, background 100ms ease',
+                      }}
                       onClick={() => setSelectedLog(log)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--color-outline-variant)';
+                        e.currentTarget.style.background = 'var(--color-surface-low)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'transparent';
+                        e.currentTarget.style.background = 'transparent';
+                      }}
                     >
-                      <div className="mt-1 text-[#8b949e]">
+                      <div style={{ marginTop: '2px', color: 'var(--color-text-muted)' }}>
                         {getCategoryIcon(log.Category)}
                       </div>
                       <div>
-                        <p className="text-[#c9d1d9] font-medium text-sm group-hover:text-[#58a6ff] transition-colors">
+                        <p className="body-sm" style={{ color: 'var(--color-text)', fontWeight: 500 }}>
                           {log.Title}
                         </p>
-                        <p className="text-[#8b949e] text-xs mt-1">
+                        <p className="label-caps" style={{ color: 'var(--color-text-muted)', marginTop: '4px' }}>
                           {format(parseISO(log.Date), 'MMM d, yyyy')} • {log.Category}
                         </p>
-                        <p className="text-[#8b949e] text-sm mt-2 line-clamp-2">
+                        <p className="body-sm" style={{ color: 'var(--color-text-variant)', marginTop: '8px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                           {log.Summary}
                         </p>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="mt-6 flex gap-3">
+                <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
                   {visibleCount < logs.length && (
                     <button 
                       onClick={() => setVisibleCount(prev => prev + 1)}
-                      className="flex-1 py-2.5 text-sm font-medium text-[#58a6ff] hover:text-white bg-[#1f6feb]/10 hover:bg-[#1f6feb]/20 border border-[#1f6feb]/30 rounded-lg transition-colors"
+                      className="btn"
+                      style={{ flex: 1, padding: '10px 16px', fontSize: '11px' }}
                     >
                       Show more
                     </button>
@@ -222,7 +232,8 @@ const ActivityBoard: React.FC = () => {
                   {visibleCount > 3 && (
                     <button 
                       onClick={() => setVisibleCount(prev => Math.max(3, prev - 1))}
-                      className="flex-1 py-2.5 text-sm font-medium text-[#8b949e] hover:text-white bg-[#30363d]/50 hover:bg-[#30363d] border border-[#30363d] rounded-lg transition-colors"
+                      className="btn"
+                      style={{ flex: 1, padding: '10px 16px', fontSize: '11px', color: 'var(--color-text-muted)' }}
                     >
                       Show less
                     </button>
@@ -230,18 +241,27 @@ const ActivityBoard: React.FC = () => {
                 </div>
               </div>
               
-              <div className="self-start">
-                <h3 className="text-white font-semibold mb-4">Activity Overview</h3>
-                <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-6 flex flex-col justify-center items-center text-center">
-                  <div className="flex flex-wrap justify-center gap-2 mb-6">
+              {/* Activity Overview */}
+              <div style={{ alignSelf: 'start' }}>
+                <h3 className="headline-sm" style={{ fontSize: '14px', marginBottom: '16px' }}>Activity Overview</h3>
+                <div style={{
+                  background: 'var(--color-surface-low)',
+                  border: '1px solid var(--color-outline-variant)',
+                  padding: '24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px', marginBottom: '20px' }}>
                     {Array.from(new Set(logs.flatMap(l => l['Tags (Comma Separated)'].split(',').map(t => t.trim())))).slice(0, 8).map(tag => (
-                      <span key={tag} className="px-3 py-1.5 bg-[#1f6feb]/10 text-[#58a6ff] border border-[#1f6feb]/30 rounded-full text-xs font-medium">
+                      <span key={tag} className="tag" style={{ fontSize: '10px' }}>
                         {tag}
                       </span>
                     ))}
                   </div>
-                  <p className="text-[#8b949e] text-sm">
-                    Total of <strong className="text-white text-lg mx-1">{logs.length}</strong> logged activities across various categories.
+                  <p className="body-sm" style={{ color: 'var(--color-text-variant)' }}>
+                    Total of <strong style={{ color: 'var(--color-accent)', fontSize: '18px', margin: '0 4px', fontFamily: 'var(--font-display)', fontWeight: 700 }}>{logs.length}</strong> logged activities across various categories.
                   </p>
                 </div>
               </div>
@@ -252,53 +272,79 @@ const ActivityBoard: React.FC = () => {
         {/* Modal */}
         <AnimatePresence>
           {selectedLog && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+            <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setSelectedLog(null)}
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                style={{ position: 'absolute', inset: 0, background: 'rgba(5, 5, 5, 0.85)' }}
               />
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative w-full max-w-3xl max-h-[85vh] bg-[#0d1117] border border-[#30363d] rounded-xl shadow-2xl flex flex-col overflow-hidden z-10"
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  maxWidth: '720px',
+                  maxHeight: '85vh',
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-accent)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden',
+                  zIndex: 10,
+                }}
               >
-                <div className="flex items-center justify-between p-4 border-b border-[#30363d] bg-[#161b22]">
-                  <div className="flex items-center gap-3">
-                    <div className="text-[#8b949e]">
+                {/* Modal header */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '16px 24px',
+                  borderBottom: '1px solid var(--color-outline-variant)',
+                  background: 'var(--color-surface-container)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
+                    <div style={{ color: 'var(--color-accent)' }}>
                       {getCategoryIcon(selectedLog.Category)}
                     </div>
-                    <h3 className="text-lg font-semibold text-[#c9d1d9] truncate pr-4">
+                    <h3 className="headline-sm" style={{ fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {selectedLog.Title}
                     </h3>
                   </div>
                   <button 
                     onClick={() => setSelectedLog(null)}
-                    className="p-2 text-[#8b949e] hover:text-white hover:bg-[#30363d] rounded-lg transition-colors"
+                    style={{
+                      padding: '8px',
+                      background: 'none',
+                      border: '1px solid var(--color-outline-variant)',
+                      color: 'var(--color-text-muted)',
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                      display: 'flex',
+                    }}
                   >
-                    <X size={20} />
+                    <X size={16} />
                   </button>
                 </div>
                 
-                <div className="p-6 overflow-y-auto custom-scrollbar">
-                  <div className="flex flex-wrap gap-4 text-sm text-[#8b949e] mb-6">
+                {/* Modal body */}
+                <div className="custom-scrollbar" style={{ padding: '24px', overflowY: 'auto' }}>
+                  <div className="label-caps" style={{ display: 'flex', gap: '12px', color: 'var(--color-text-muted)', marginBottom: '24px' }}>
                     <span>{format(parseISO(selectedLog.Date), 'MMMM d, yyyy')}</span>
                     <span>•</span>
                     <span>{selectedLog.Category}</span>
                   </div>
                   
-                  <div className="prose prose-invert prose-sm sm:prose-base max-w-none prose-a:text-[#58a6ff] prose-code:text-[#c9d1d9] prose-code:bg-[#161b22] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-pre:bg-[#161b22] prose-pre:border prose-pre:border-[#30363d]">
+                  <div className="prose-terminal body-sm">
                     <Markdown>{selectedLog['Content (Markdown)']}</Markdown>
                   </div>
                   
-                  <div className="mt-8 pt-6 border-t border-[#30363d] flex flex-wrap gap-2">
+                  <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--color-outline-variant)', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {selectedLog['Tags (Comma Separated)'].split(',').map(t => t.trim()).map(tag => (
-                      <span key={tag} className="px-2.5 py-1 bg-[#161b22] text-[#8b949e] border border-[#30363d] rounded-full text-xs">
-                        {tag}
-                      </span>
+                      <span key={tag} className="tag">{tag}</span>
                     ))}
                   </div>
                 </div>

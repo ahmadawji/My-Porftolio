@@ -16,63 +16,57 @@ const Contact: React.FC = () => {
       ...prev,
       [e.target.id]: e.target.value
     }));
-    // Clear error when user starts typing
     if (status === 'error') setStatus('idle');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
     if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
-        setStatus('error');
-        return;
+      setStatus('error');
+      return;
     }
 
     setStatus('submitting');
 
-    // Simulate processing delay for better UX
     setTimeout(() => {
       const subject = `Portfolio Contact from ${formData.name}`;
       const body = `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`;
       const mailtoLink = `mailto:${PERSONAL_INFO.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       
-      // Open default email client
       window.location.href = mailtoLink;
       
       setStatus('success');
       setFormData({ name: '', email: '', message: '' });
       
-      // Reset status after a few seconds
       setTimeout(() => setStatus('idle'), 5000);
     }, 1500);
   };
 
   return (
-    <section id="contact" className="py-24 relative">
-
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+    <section id="contact" className="section" style={{ borderBottom: 'none' }}>
+      <div className="container" style={{ maxWidth: '900px' }}>
+        <div className="section-header">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-bold text-text-primary mb-4"
+            className="section-title"
           >
             Get In Touch
           </motion.h2>
           <motion.div 
             initial={{ width: 0 }}
-            whileInView={{ width: 80 }}
+            whileInView={{ width: 48 }}
             viewport={{ once: true }}
-            className="h-1 bg-accent mx-auto rounded-full mb-6"
+            className="section-bar"
           />
           <motion.p 
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-text-secondary text-lg"
+            className="section-subtitle"
           >
             I'm currently looking for new opportunities. Whether you have a question or just want to say hi, my inbox is always open.
           </motion.p>
@@ -83,34 +77,51 @@ const Contact: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-md rounded-2xl p-8 md:p-12 border border-white/20 dark:border-slate-700/30 shadow-2xl"
+          className="card"
+          style={{ padding: '48px 32px' }}
         >
-          <div className="grid md:grid-cols-2 gap-12">
-            
-            <div className="space-y-8">
-              <h3 className="text-2xl font-bold text-text-primary">Let's connect!</h3>
-              <p className="text-text-secondary">
+          <div className="grid-2" style={{ gap: '48px' }}>
+            {/* Contact Info */}
+            <div>
+              <h3 className="headline-sm" style={{ color: 'var(--color-accent)', marginBottom: '20px', fontSize: '16px' }}>
+                Let's Connect
+              </h3>
+              <p className="body-sm" style={{ color: 'var(--color-text-variant)', marginBottom: '32px', lineHeight: '22px' }}>
                 Feel free to reach out for collaborations, job opportunities, or freelance projects. I'm always excited to discuss new technologies and creative ideas.
               </p>
               
-              <div className="space-y-4">
-                <a href={`mailto:${PERSONAL_INFO.email}`} className="flex items-center gap-4 text-text-secondary hover:text-accent transition-colors">
-                  <div className="w-10 h-10 bg-white/50 dark:bg-slate-800/50 rounded-full flex items-center justify-center border border-text-primary/10">
-                    <Mail size={18} />
-                  </div>
-                  <span>{PERSONAL_INFO.email}</span>
+              {/* Terminal-style contact info */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
+                <a 
+                  href={`mailto:${PERSONAL_INFO.email}`} 
+                  className="leader-line"
+                  style={{ textDecoration: 'none', transition: 'color 100ms ease' }}
+                  onMouseEnter={(e) => { e.currentTarget.querySelector('.leader-value')!.setAttribute('style', 'white-space:nowrap;color:var(--color-accent)'); }}
+                  onMouseLeave={(e) => { e.currentTarget.querySelector('.leader-value')!.setAttribute('style', 'white-space:nowrap;color:var(--color-text)'); }}
+                >
+                  <span className="leader-label label-caps">
+                    <Mail size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} />
+                    Email
+                  </span>
+                  <span className="leader-dots" />
+                  <span className="leader-value body-sm">{PERSONAL_INFO.email}</span>
                 </a>
-                <div className="flex items-center gap-4 text-text-secondary">
-                  <div className="w-10 h-10 bg-white/50 dark:bg-slate-800/50 rounded-full flex items-center justify-center border border-text-primary/10">
-                    <Phone size={18} />
-                  </div>
-                  <span>{PERSONAL_INFO.phone}</span>
+                <div className="leader-line">
+                  <span className="leader-label label-caps">
+                    <Phone size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} />
+                    Phone
+                  </span>
+                  <span className="leader-dots" />
+                  <span className="leader-value body-sm">{PERSONAL_INFO.phone}</span>
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-text-primary/10">
-                <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-4">Find me on</h4>
-                <div className="flex gap-4">
+              {/* Social links */}
+              <div style={{ borderTop: '1px solid var(--color-outline-variant)', paddingTop: '24px' }}>
+                <h4 className="label-caps" style={{ color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+                  Find me on
+                </h4>
+                <div style={{ display: 'flex', gap: '8px' }}>
                   {SOCIAL_LINKS.map((link) => {
                     const Icon = ICON_MAP[link.icon];
                     return (
@@ -119,10 +130,30 @@ const Contact: React.FC = () => {
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-12 h-12 bg-white/50 dark:bg-slate-800/50 rounded-lg flex items-center justify-center text-text-secondary hover:text-white hover:bg-accent transition-all duration-300 border border-text-primary/10 hover:border-accent"
                         aria-label={link.name}
+                        style={{
+                          width: '44px',
+                          height: '44px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '1px solid var(--color-outline-variant)',
+                          color: 'var(--color-text-variant)',
+                          transition: 'border-color 100ms ease, color 100ms ease, background 100ms ease',
+                          textDecoration: 'none',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = 'var(--color-accent)';
+                          e.currentTarget.style.color = 'var(--color-bg)';
+                          e.currentTarget.style.background = 'var(--color-accent)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = 'var(--color-outline-variant)';
+                          e.currentTarget.style.color = 'var(--color-text-variant)';
+                          e.currentTarget.style.background = 'transparent';
+                        }}
                       >
-                        {Icon && <Icon size={24} />}
+                        {Icon && <Icon size={20} />}
                       </a>
                     );
                   })}
@@ -130,105 +161,106 @@ const Contact: React.FC = () => {
               </div>
             </div>
 
-            <form className="space-y-4" onSubmit={handleSubmit}>
+            {/* Form */}
+            <form style={{ display: 'flex', flexDirection: 'column', gap: '24px' }} onSubmit={handleSubmit}>
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-text-secondary mb-1">Name</label>
+                <label htmlFor="name" className="input-label">Name</label>
                 <input
                   type="text"
                   id="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full bg-white/50 dark:bg-slate-800/50 border border-text-primary/10 rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors placeholder:text-text-secondary/50"
-                  placeholder="Your Name"
+                  className="input-terminal"
+                  placeholder="YOUR NAME"
                 />
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-text-secondary mb-1">Email</label>
+                <label htmlFor="email" className="input-label">Email</label>
                 <input
                   type="email"
                   id="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full bg-white/50 dark:bg-slate-800/50 border border-text-primary/10 rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors placeholder:text-text-secondary/50"
-                  placeholder="hello@example.com"
+                  className="input-terminal"
+                  placeholder="HELLO@EXAMPLE.COM"
                 />
               </div>
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-text-secondary mb-1">Message</label>
+                <label htmlFor="message" className="input-label">Message</label>
                 <textarea
                   id="message"
                   rows={4}
                   value={formData.message}
                   onChange={handleChange}
-                  className="w-full bg-white/50 dark:bg-slate-800/50 border border-text-primary/10 rounded-lg px-4 py-3 text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors resize-none placeholder:text-text-secondary/50"
-                  placeholder="Tell me about your project..."
-                ></textarea>
+                  className="input-terminal"
+                  placeholder="TELL ME ABOUT YOUR PROJECT..."
+                  style={{ border: '1px solid var(--color-outline-variant)', padding: '12px' }}
+                />
               </div>
               
               <motion.button
-                whileHover={status === 'idle' ? { scale: 1.02 } : {}}
-                whileTap={status === 'idle' ? { scale: 0.98 } : {}}
+                whileHover={status === 'idle' ? { scale: 1.01 } : {}}
+                whileTap={status === 'idle' ? { scale: 0.99 } : {}}
                 type="submit"
                 disabled={status === 'submitting' || status === 'success'}
-                className={`w-full font-medium py-3 rounded-lg transition-all duration-300 shadow-lg flex items-center justify-center gap-2
-                  ${status === 'error' 
-                    ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/25' 
-                    : status === 'success'
-                      ? 'bg-green-500 hover:bg-green-600 text-white shadow-green-500/25'
-                      : 'bg-accent hover:bg-accent-hover text-white shadow-indigo-500/25 disabled:opacity-70 disabled:cursor-not-allowed'
-                  }
-                `}
+                className={status === 'error' ? 'btn' : status === 'success' ? 'btn' : 'btn btn-primary'}
+                style={{
+                  width: '100%',
+                  padding: '14px 24px',
+                  ...(status === 'error' ? { borderColor: 'var(--color-error)', color: 'var(--color-error)' } : {}),
+                  ...(status === 'success' ? { borderColor: 'var(--color-accent)', color: 'var(--color-accent)' } : {}),
+                  ...(status === 'submitting' || status === 'success' ? { opacity: 0.7, cursor: 'not-allowed' } : {}),
+                }}
               >
                 <AnimatePresence mode="wait">
                   {status === 'submitting' ? (
                     <motion.div
                       key="submitting"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      className="flex items-center gap-2"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                     >
-                      <Loader2 size={18} className="animate-spin" />
-                      <span>Preparing Email...</span>
+                      <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                      <span>PREPARING EMAIL...</span>
                     </motion.div>
                   ) : status === 'success' ? (
                     <motion.div
                       key="success"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      className="flex items-center gap-2"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                     >
-                      <Check size={18} />
-                      <span>Opening Email Client...</span>
+                      <Check size={16} />
+                      <span>OPENING EMAIL CLIENT...</span>
                     </motion.div>
                   ) : status === 'error' ? (
-                     <motion.div
+                    <motion.div
                       key="error"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      className="flex items-center gap-2"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                     >
-                      <AlertCircle size={18} />
-                      <span>Please fill all fields</span>
+                      <AlertCircle size={16} />
+                      <span>PLEASE FILL ALL FIELDS</span>
                     </motion.div>
                   ) : (
                     <motion.div
                       key="idle"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      className="flex items-center gap-2"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                     >
-                      <span>Send Message</span>
-                      <Send size={18} />
+                      <span>SEND MESSAGE</span>
+                      <Send size={16} />
                     </motion.div>
                   )}
                 </AnimatePresence>
               </motion.button>
             </form>
-
           </div>
         </motion.div>
       </div>
